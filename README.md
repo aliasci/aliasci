@@ -14,3 +14,7 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
+
+## Web3 Web Site Builder
+
+A simple prototype for generating and uploading single page websites to IPFS using OpenAI. See `website_builder/` for details.

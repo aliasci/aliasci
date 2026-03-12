@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-gray-800 bg-gray-50 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-lg
+           hover:bg-primary-dark transition-all duration-200 active:scale-95;
+  }
+  .btn-accent {
+    @apply bg-accent text-gray-900 font-semibold px-5 py-2.5 rounded-lg
+           hover:bg-accent-dark transition-all duration-200 active:scale-95;
+  }
+}

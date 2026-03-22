@@ -1,12 +1,16 @@
-const STORAGE_KEY = 'web3-browser-wallet-profile'
+const STORAGE_KEY = 'awi-bowser-wallet-profile'
+const inMemorySecretVault = new Map()
 
-function pseudoHex(length) {
-  const alphabet = 'abcdef0123456789'
-  let result = ''
-  for (let index = 0; index < length; index += 1) {
-    result += alphabet[Math.floor(Math.random() * alphabet.length)]
+function secureHex(length) {
+  const cryptoApi = globalThis.crypto
+  if (!cryptoApi?.getRandomValues) {
+    throw new Error('Secure random source is unavailable in this environment')
   }
-  return result
+
+  const bytes = new Uint8Array(Math.ceil(length / 2))
+  cryptoApi.getRandomValues(bytes)
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return hex.slice(0, length)
 }
 
 function toAddress(seed) {
@@ -27,21 +31,30 @@ function readStorage(storage) {
 }
 
 export function createWalletService(storage = window.localStorage) {
+  function persistProfile(profile) {
+    // Intentionally avoid persisting secret material to localStorage.
+    storage.setItem(STORAGE_KEY, JSON.stringify(profile))
+  }
+
+  function getPrivateKey(profile) {
+    return profile?.address ? inMemorySecretVault.get(profile.address) : null
+  }
+
   function getProfile() {
     return readStorage(storage)
   }
 
   function createProfile(label) {
-    const privateKey = `0x${pseudoHex(64)}`
+    const privateKey = `0x${secureHex(64)}`
     const address = toAddress(privateKey.replace('0x', ''))
     const profile = {
       label: label || 'Primary Wallet',
       address,
-      privateKey,
       createdAt: new Date().toISOString(),
       isLocked: true,
     }
-    storage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    inMemorySecretVault.set(address, privateKey)
+    persistProfile(profile)
     return profile
   }
 
@@ -54,11 +67,11 @@ export function createWalletService(storage = window.localStorage) {
     const profile = {
       label: label || 'Imported Wallet',
       address: toAddress(normalized),
-      privateKey: `0x${normalized}`,
       createdAt: new Date().toISOString(),
       isLocked: true,
     }
-    storage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    inMemorySecretVault.set(profile.address, `0x${normalized}`)
+    persistProfile(profile)
     return profile
   }
 
@@ -67,9 +80,12 @@ export function createWalletService(storage = window.localStorage) {
     if (!profile) {
       throw new Error('Wallet profile not found')
     }
+    if (!getPrivateKey(profile)) {
+      throw new Error('Wallet secret unavailable, re-import wallet for this session')
+    }
 
     const unlocked = { ...profile, isLocked: false }
-    storage.setItem(STORAGE_KEY, JSON.stringify(unlocked))
+    persistProfile(unlocked)
     return unlocked
   }
 
@@ -79,7 +95,7 @@ export function createWalletService(storage = window.localStorage) {
       return null
     }
     const locked = { ...profile, isLocked: true }
-    storage.setItem(STORAGE_KEY, JSON.stringify(locked))
+    persistProfile(locked)
     return locked
   }
 
@@ -91,8 +107,11 @@ export function createWalletService(storage = window.localStorage) {
     if (profile.isLocked) {
       throw new Error('Wallet is locked')
     }
+    if (!getPrivateKey(profile)) {
+      throw new Error('Wallet secret unavailable, re-import wallet for this session')
+    }
 
-    return `0xsignature_${pseudoHex(32)}_${message.length.toString(16)}`
+    return `0xsignature_${secureHex(32)}_${message.length.toString(16)}`
   }
 
   function signTransaction(txPayload) {
@@ -103,9 +122,12 @@ export function createWalletService(storage = window.localStorage) {
     if (profile.isLocked) {
       throw new Error('Wallet is locked')
     }
+    if (!getPrivateKey(profile)) {
+      throw new Error('Wallet secret unavailable, re-import wallet for this session')
+    }
 
     const fingerprint = `${txPayload.to || 'unknown'}:${String(txPayload.valueWei || 0)}`
-    return `0xtx_${pseudoHex(20)}_${fingerprint.length.toString(16)}`
+    return `0xtx_${secureHex(20)}_${fingerprint.length.toString(16)}`
   }
 
   return {

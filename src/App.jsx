@@ -51,7 +51,7 @@ function App() {
                 W3
               </div>
               <div>
-                <p className="font-semibold">Decentra Browser</p>
+                <p className="font-semibold">Awi Bowser</p>
                 <p className="text-xs text-slate-400">Desktop MVP • EVM-first</p>
               </div>
             </div>

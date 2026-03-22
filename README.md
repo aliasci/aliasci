@@ -1,16 +1,27 @@
-# React + Vite
+# Awi Bowser
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Desktop-first, EVM-first Web3 browser MVP scaffold built with React + Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Browser shell style UI with tab samples and navigation input
+- Target resolver for `https://`, `ipfs://`, and `.eth` style names
+- Permission center for origin connect/approve/revoke flow
+- Wallet demo lifecycle (create/import/lock/unlock)
+- Security status panel with blocklist and heuristic warnings
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open the local URL printed by Vite (usually `http://localhost:5173`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Build and lint
+
+```bash
+npm run lint
+npm run build
+```

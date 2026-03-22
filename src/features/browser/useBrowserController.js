@@ -25,13 +25,14 @@ export function useBrowserController() {
   const [lastTxResult, setLastTxResult] = useState('')
   const [lastError, setLastError] = useState('')
   const [connectionRequest, setConnectionRequest] = useState(null)
+  const [permissionVersion, setPermissionVersion] = useState(0)
 
   const resolved = useMemo(
     () => normalizeTarget(activeTarget, DEFAULT_IPFS_GATEWAY),
     [activeTarget],
   )
   const security = useMemo(() => securityService.inspectHost(resolved.host), [resolved.host])
-  const permissions = useMemo(() => providerService.listPermissions(), [connectionRequest, walletProfile])
+  const permissions = useMemo(() => providerService.listPermissions(), [permissionVersion])
 
   const walletSummary = {
     label: walletProfile?.label || 'No wallet',
@@ -104,6 +105,7 @@ export function useBrowserController() {
     }
     providerService.approveConnection(connectionRequest.origin, walletProfile.address)
     setConnectionRequest(null)
+    setPermissionVersion((value) => value + 1)
   }
 
   function rejectConnection() {
@@ -112,14 +114,26 @@ export function useBrowserController() {
 
   function revokePermission(origin) {
     providerService.revokeConnection(origin)
-    setConnectionRequest((existing) => (existing ? { ...existing } : null))
+    setPermissionVersion((value) => value + 1)
+  }
+
+  function ensurePermissionForResolvedOrigin() {
+    const origin = resolved.host
+    if (!origin) {
+      throw new Error('Current target has no valid origin')
+    }
+    const permission = providerService.getPermission(origin)
+    if (!permission) {
+      throw new Error('Connect this origin before signing')
+    }
+    return origin
   }
 
   function signDemoMessage() {
     clearError()
     try {
-      const origin = resolved.host || 'unknown'
-      const request = providerService.requestSignature(origin, { message: 'Sign into Web3 Browser MVP' })
+      const origin = ensurePermissionForResolvedOrigin()
+      const request = providerService.requestSignature(origin, { message: 'Sign into Awi Bowser MVP' })
       const signature = walletService.signMessage(request.payload.message)
       setLastSignature(signature)
     } catch (error) {
@@ -130,6 +144,7 @@ export function useBrowserController() {
   function signDemoTransaction() {
     clearError()
     try {
+      ensurePermissionForResolvedOrigin()
       const txRequest = {
         to: '0x1111111111111111111111111111111111111111',
         valueWei: 1_000_000_000_000_000n,

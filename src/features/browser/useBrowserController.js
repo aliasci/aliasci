@@ -25,14 +25,13 @@ export function useBrowserController() {
   const [lastTxResult, setLastTxResult] = useState('')
   const [lastError, setLastError] = useState('')
   const [connectionRequest, setConnectionRequest] = useState(null)
-  const [permissionVersion, setPermissionVersion] = useState(0)
+  const [permissions, setPermissions] = useState(() => providerService.listPermissions())
 
   const resolved = useMemo(
     () => normalizeTarget(activeTarget, DEFAULT_IPFS_GATEWAY),
     [activeTarget],
   )
   const security = useMemo(() => securityService.inspectHost(resolved.host), [resolved.host])
-  const permissions = useMemo(() => providerService.listPermissions(), [permissionVersion])
 
   const walletSummary = {
     label: walletProfile?.label || 'No wallet',
@@ -105,7 +104,7 @@ export function useBrowserController() {
     }
     providerService.approveConnection(connectionRequest.origin, walletProfile.address)
     setConnectionRequest(null)
-    setPermissionVersion((value) => value + 1)
+    setPermissions(providerService.listPermissions())
   }
 
   function rejectConnection() {
@@ -114,7 +113,7 @@ export function useBrowserController() {
 
   function revokePermission(origin) {
     providerService.revokeConnection(origin)
-    setPermissionVersion((value) => value + 1)
+    setPermissions(providerService.listPermissions())
   }
 
   function ensurePermissionForResolvedOrigin() {

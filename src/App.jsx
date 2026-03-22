@@ -1,218 +1,265 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { SAMPLE_TARGETS } from './features/browser/mockData'
+import { useBrowserController } from './features/browser/useBrowserController'
 
-const categories = [
-  { name: 'Meyve', icon: '🍎' },
-  { name: 'Sebze', icon: '🥦' },
-  { name: 'Atıştırmalık', icon: '🍪' },
-  { name: 'İçecek', icon: '🥤' },
-  { name: 'Fırın', icon: '🥐' },
-  { name: 'Temel Gıda', icon: '🥫' },
-  { name: 'Süt Ürünleri', icon: '🥛' },
-  { name: 'Temizlik', icon: '🧴' },
-]
-
-const products = [
-  { name: 'Muz', detail: '500 g', price: 42.9, bg: 'bg-amber-50' },
-  { name: 'Avokado', detail: '2 adet', price: 58.5, bg: 'bg-emerald-50' },
-  { name: 'Soğuk Kahve', detail: '330 ml', price: 36.95, bg: 'bg-sky-50' },
-  { name: 'Granola Bar', detail: '4 x 25 g', price: 47.25, bg: 'bg-violet-50' },
-  { name: 'Maden Suyu', detail: '6 x 200 ml', price: 32.9, bg: 'bg-cyan-50' },
-  { name: 'Yoğurt', detail: '1 kg', price: 54.5, bg: 'bg-rose-50' },
-]
-
-const addresses = ['Ev • Kadıköy', 'Ofis • Levent', 'Arkadaşım • Beşiktaş']
-
-function LocationIcon() {
-  return (
-    <svg className="h-5 w-5 text-[#5d3ebc]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M19 10.5c0 5.75-7 11.25-7 11.25S5 16.25 5 10.5a7 7 0 1 1 14 0Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+function statusStyles(status) {
+  if (status === 'critical') {
+    return 'border-red-200 bg-red-50 text-red-700'
+  }
+  if (status === 'warning') {
+    return 'border-amber-200 bg-amber-50 text-amber-700'
+  }
+  return 'border-emerald-200 bg-emerald-50 text-emerald-700'
 }
 
 function App() {
-  const [selectedAddress, setSelectedAddress] = useState(addresses[0])
-  const [cartCount] = useState(3)
-
-  const formattedProducts = useMemo(
-    () =>
-      products.map((product) => ({
-        ...product,
-        formattedPrice: product.price.toLocaleString('tr-TR', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }),
-      })),
-    [],
-  )
+  const [importKey, setImportKey] = useState('')
+  const {
+    inputTarget,
+    setInputTarget,
+    activeTarget,
+    tabs,
+    resolved,
+    security,
+    permissions,
+    walletSummary,
+    lastSignature,
+    lastTxResult,
+    lastError,
+    connectionRequest,
+    onNavigate,
+    onUseSampleTarget,
+    createWallet,
+    importWallet,
+    unlockWallet,
+    lockWallet,
+    requestConnection,
+    approveConnection,
+    rejectConnection,
+    revokePermission,
+    signDemoMessage,
+    signDemoTransaction,
+  } = useBrowserController()
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#5d3ebc] font-bold text-[#ffd200]">
-              OD
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-4 lg:px-8">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 font-bold text-white">
+                W3
+              </div>
+              <div>
+                <p className="font-semibold">Decentra Browser</p>
+                <p className="text-xs text-slate-400">Desktop MVP • EVM-first</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-[#5d3ebc] sm:text-base">OnDemand</p>
-              <p className="text-[11px] text-slate-500 sm:text-xs">Delivery</p>
+            <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs">
+              Wallet: {walletSummary.address}
             </div>
           </div>
 
-          <label className="hidden max-w-md flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 sm:flex">
-            <LocationIcon />
-            <select
-              className="w-full bg-transparent text-sm font-medium text-slate-700 outline-none"
-              value={selectedAddress}
-              onChange={(event) => setSelectedAddress(event.target.value)}
-              aria-label="Teslimat adresi seçimi"
-            >
-              {addresses.map((address) => (
-                <option key={address} value={address}>
-                  {address}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+                  activeTarget === tab.target
+                    ? 'border-violet-500 bg-violet-500/20 text-violet-200'
+                    : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                }`}
+                onClick={() => onUseSampleTarget(tab.target)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-          <div className="flex items-center gap-2">
-            <button className="hidden rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 sm:inline-flex">
-              Giriş Yap
-            </button>
-            <button className="hidden rounded-full bg-[#5d3ebc] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 sm:inline-flex">
-              Kayıt Ol
-            </button>
-            <button className="relative inline-flex rounded-full bg-[#ffd200] px-4 py-2 text-sm font-bold text-slate-900 transition hover:brightness-95">
-              Sepet
-              <span className="ml-1 rounded-full bg-slate-900 px-1.5 text-xs text-white">{cartCount}</span>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none ring-violet-500 placeholder:text-slate-500 focus:ring"
+              value={inputTarget}
+              onChange={(event) => setInputTarget(event.target.value)}
+              placeholder="https://app.uniswap.org | ipfs://... | vitalik.eth"
+            />
+            <button
+              className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+              onClick={onNavigate}
+            >
+              Navigate
             </button>
           </div>
-        </div>
-        <div className="px-4 pb-3 sm:hidden">
-          <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">
-            <LocationIcon />
-            <select
-              className="w-full bg-transparent text-sm font-medium text-slate-700 outline-none"
-              value={selectedAddress}
-              onChange={(event) => setSelectedAddress(event.target.value)}
-              aria-label="Mobil teslimat adresi seçimi"
-            >
-              {addresses.map((address) => (
-                <option key={address} value={address}>
-                  {address}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        <section className="grid items-center gap-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 md:grid-cols-2 md:p-10">
-          <div>
-            <p className="mb-3 inline-flex rounded-full bg-[#5d3ebc]/10 px-3 py-1 text-xs font-semibold text-[#5d3ebc]">
-              7/24 On-Demand Delivery
+      <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 lg:grid-cols-3 lg:px-8">
+        <section className="space-y-4 lg:col-span-2">
+          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <h2 className="text-lg font-semibold">Navigation Result</h2>
+            <p className="mt-3 text-sm text-slate-300">
+              <span className="text-slate-400">Input:</span> {resolved.input || '-'}
             </p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              Dakikalar içinde kapında
-            </h1>
-            <p className="mt-4 max-w-xl text-sm text-slate-600 sm:text-base">
-              İhtiyacın olan ürünleri tek tıkla seç, siparişini takip et ve birkaç dakika içinde teslim al.
-              Hızlı, sade ve modern bir alışveriş deneyimi.
+            <p className="mt-1 text-sm text-slate-300">
+              <span className="text-slate-400">Type:</span> {resolved.kind.toUpperCase()}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button className="rounded-full bg-[#5d3ebc] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110">
-                Hemen Sipariş Ver
+            <p className="mt-1 break-all text-sm text-slate-300">
+              <span className="text-slate-400">Resolved URL:</span> {resolved.resolvedUrl || '-'}
+            </p>
+            <p className="mt-1 text-sm text-slate-300">
+              <span className="text-slate-400">Host:</span> {resolved.host || '-'}
+            </p>
+            <div className={`mt-4 rounded-xl border px-3 py-2 text-sm ${statusStyles(security.status)}`}>
+              Security status: <span className="font-semibold uppercase">{security.status}</span>
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs">
+                {security.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {SAMPLE_TARGETS.map((target) => (
+                <button
+                  key={target}
+                  className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-violet-400 hover:text-violet-200"
+                  onClick={() => onUseSampleTarget(target)}
+                >
+                  {target}
+                </button>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <h2 className="text-lg font-semibold">dApp Permission Center</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                className="rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+                onClick={requestConnection}
+              >
+                Request Connect
               </button>
-              <button className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                Kampanyaları Gör
+              <button
+                className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:border-slate-500"
+                onClick={signDemoMessage}
+              >
+                Sign Message
+              </button>
+              <button
+                className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:border-slate-500"
+                onClick={signDemoTransaction}
+              >
+                Sign Transaction
               </button>
             </div>
-          </div>
-          <div className="relative">
-            <div className="mx-auto flex h-64 max-w-md items-center justify-center rounded-3xl bg-gradient-to-br from-[#5d3ebc] to-[#7e68d7] p-4 text-white shadow-xl">
-              <div className="w-full rounded-2xl border border-white/30 bg-white/10 p-6 backdrop-blur-sm">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/80">Teslimat görseli</p>
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#ffd200] text-2xl">🛵</div>
-                  <div>
-                    <p className="text-lg font-semibold">Siparişin Yolda</p>
-                    <p className="text-sm text-white/80">Tahmini varış: 12 dk</p>
-                  </div>
-                </div>
-                <div className="mt-5 h-2 rounded-full bg-white/20">
-                  <div className="h-full w-2/3 rounded-full bg-[#ffd200]" />
+
+            {connectionRequest && (
+              <div className="mt-4 rounded-xl border border-violet-400/40 bg-violet-500/10 p-3 text-sm">
+                <p className="font-semibold">Connection request pending</p>
+                <p className="mt-1 text-slate-300">Origin: {connectionRequest.origin || 'unknown'}</p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
+                    onClick={approveConnection}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white"
+                    onClick={rejectConnection}
+                  >
+                    Reject
+                  </button>
                 </div>
               </div>
+            )}
+
+            <div className="mt-5">
+              <h3 className="text-sm font-semibold text-slate-200">Approved origins</h3>
+              {permissions.length === 0 ? (
+                <p className="mt-2 text-xs text-slate-400">No origin connected yet.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {permissions.map((permission) => (
+                    <li
+                      key={permission.origin}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs"
+                    >
+                      <div>
+                        <p>{permission.origin}</p>
+                        <p className="text-slate-400">{permission.address}</p>
+                      </div>
+                      <button
+                        className="rounded-md border border-red-400 px-2 py-1 text-red-300"
+                        onClick={() => revokePermission(permission.origin)}
+                      >
+                        Revoke
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          </div>
+          </article>
         </section>
 
-        <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 sm:text-xl">Kategoriler</h2>
-            <button className="text-sm font-semibold text-[#5d3ebc] hover:underline">Tümünü Gör</button>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-            {categories.map((category) => (
+        <aside className="space-y-4">
+          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <h2 className="text-lg font-semibold">Wallet</h2>
+            <p className="mt-3 text-sm text-slate-300">Label: {walletSummary.label}</p>
+            <p className="mt-1 text-sm text-slate-300">
+              Status: {walletSummary.isLocked ? 'Locked' : 'Unlocked'}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
               <button
-                key={category.name}
-                className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 transition hover:-translate-y-0.5 hover:border-[#5d3ebc]/40 hover:shadow-md"
+                className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white"
+                onClick={createWallet}
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-3xl transition group-hover:bg-[#5d3ebc] group-hover:shadow-lg">
-                  <span className="transition group-hover:scale-110">{category.icon}</span>
-                </span>
-                <span className="text-xs font-semibold text-slate-700 sm:text-sm">{category.name}</span>
+                Create
               </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 sm:text-xl">Popüler Ürünler</h2>
-            <button className="text-sm font-semibold text-[#5d3ebc] hover:underline">Daha Fazla</button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {formattedProducts.map((product) => (
-              <article
-                key={product.name}
-                className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              <button
+                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200"
+                onClick={unlockWallet}
               >
-                <button
-                  className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#5d3ebc] text-lg font-bold text-white transition hover:brightness-110"
-                  aria-label={`${product.name} ürününü ekle`}
-                >
-                  +
-                </button>
-                <div
-                  className={`mb-4 flex h-28 items-center justify-center rounded-xl text-4xl ${product.bg}`}
-                  aria-hidden="true"
-                >
-                  📦
-                </div>
-                <p className="text-sm text-slate-500">{product.detail}</p>
-                <h3 className="mt-1 text-base font-semibold text-slate-900">{product.name}</h3>
-                <p className="mt-3 text-2xl font-extrabold text-[#5d3ebc]">{product.formattedPrice} TL</p>
-              </article>
-            ))}
-          </div>
-        </section>
+                Unlock
+              </button>
+              <button
+                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200"
+                onClick={lockWallet}
+              >
+                Lock
+              </button>
+            </div>
+            <label className="mt-4 block text-xs text-slate-400">
+              Import private key (demo)
+              <input
+                value={importKey}
+                onChange={(event) => setImportKey(event.target.value)}
+                placeholder="0x..."
+                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none ring-violet-500 focus:ring"
+              />
+            </label>
+            <button
+              className="mt-2 rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200"
+              onClick={() => importWallet(importKey)}
+            >
+              Import
+            </button>
+          </article>
+
+          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-xs text-slate-300">
+            <h2 className="text-sm font-semibold text-slate-100">Latest Output</h2>
+            <p className="mt-3 break-all">
+              <span className="text-slate-500">Signature:</span> {lastSignature || '-'}
+            </p>
+            <p className="mt-2 break-all">
+              <span className="text-slate-500">Transaction:</span> {lastTxResult || '-'}
+            </p>
+            <p className="mt-2 break-all text-red-300">
+              <span className="text-slate-500">Error:</span> {lastError || '-'}
+            </p>
+          </article>
+        </aside>
       </main>
     </div>
   )

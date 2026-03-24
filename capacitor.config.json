@@ -1,0 +1,9 @@
+{
+  "appId": "com.helalhesap.mobile",
+  "appName": "Helal Hesap",
+  "webDir": "dist",
+  "server": {
+    "url": "https://helalhesap.com/",
+    "cleartext": false
+  }
+}

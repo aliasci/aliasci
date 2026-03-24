@@ -1,16 +1,50 @@
-# React + Vite
+# Helal Hesap Mobil Uygulama
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu proje, https://helalhesap.com/ web sitesini Android ve iOS'ta native kabuk icinde calistiran bir Capacitor mobil uygulamasidir.
 
-Currently, two official plugins are available:
+## Gereksinimler
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 20+
+- Android Studio (Android icin)
+- Xcode (yalnizca macOS, iOS icin)
 
-## React Compiler
+## Kurulum
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+```
 
-## Expanding the ESLint configuration
+## Gelistirme
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Web arayuzunu Vite ile calistirmak icin:
+
+```bash
+npm run dev
+```
+
+## Mobil projeleri acma
+
+Android Studio'da acmak icin:
+
+```bash
+npm run mobile:android
+```
+
+Xcode'da acmak icin:
+
+```bash
+npm run mobile:ios
+```
+
+## Senkronizasyon
+
+Yapilandirma veya plugin degisikligi yaptiktan sonra native projeleri guncellemek icin:
+
+```bash
+npm run mobile:sync
+```
+
+## Not
+
+- Uygulama acildiginda dogrudan `https://helalhesap.com/` adresi yuklenir.
+- `server.url` kullanimindan dolayi web build dosyalari mobilde zorunlu degildir; yine de web arayuzu icin `npm run build` komutu mevcuttur.
